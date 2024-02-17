@@ -218,15 +218,19 @@ public:
     template<typename TType, typename CompType>
     auto get_a(TType T, const CompType& molefracs) const {
         std::common_type_t<TType, decltype(molefracs[0])> a_ = 0.0;
-        for (auto i = 0; i < molefracs.size(); ++i) {
+        for (auto i = 0; i < molefracs.size()-1; ++i) {
             auto alphai = forceeval(std::visit([&](auto& t) { return t(T); }, alphas[i]));
             auto ai_ = forceeval(this->ai[i] * alphai);
-            for (auto j = 0; j < molefracs.size(); ++j) {
+            
+            a_ = a_ + molesfracs[i]**2 * sqrt(ai_**2)
+
+            for (auto j = i+1; j < molefracs.size(); ++j) {
                 auto alphaj = forceeval(std::visit([&](auto& t) { return t(T); }, alphas[j]));
                 auto aj_ = this->ai[j] * alphaj;
                 auto aij = forceeval((1 - kmat(i,j)) * sqrt(ai_ * aj_));
-                a_ = a_ + molefracs[i] * molefracs[j] * aij;
+                a_ = a_ + 2.0 * molefracs[i] * molefracs[j] * aij;
             }
+            a_ = a_ + molesfracs[j]**2 * sqrt(aj_**2)
         }
         return forceeval(a_);
     }
