@@ -222,7 +222,7 @@ public:
             auto alphai = forceeval(std::visit([&](auto& t) { return t(T); }, alphas[i]));
             auto ai_ = forceeval(this->ai[i] * alphai);
             
-            a_ = a_ + molesfracs[i]**2 * ai_
+            a_ = a_ + molesfracs[i]**2 * ai_;
 
             for (auto j = i+1; j < molefracs.size(); ++j) {
                 auto alphaj = forceeval(std::visit([&](auto& t) { return t(T); }, alphas[j]));
@@ -230,7 +230,7 @@ public:
                 auto aij = forceeval((1 - kmat(i,j)) * sqrt(ai_ * aj_));
                 a_ = a_ + 2.0 * molefracs[i] * molefracs[j] * aij;
             }
-            a_ = a_ + molesfracs[j]**2 * aj_
+            a_ = a_ + molesfracs[j]**2 * aj_;
         }
         return forceeval(a_);
     }
@@ -832,16 +832,16 @@ public:
             auto bi = get_bi(i, T);
             auto ai = get_ai(i, T);
 
-            b += z[i]**2 * bi
-            a += z[i]**2 * ai
+            a += z[i]**2 * ai;
+            b += z[i]**2 * bi;
             for (auto j = i+1; j < N; ++j){
                 auto bj = get_bi(j, T);
                 auto aj = get_ai(j, T);
                 b += z[i]*z[j]*(bi + bj)*(1.0 - lmat(i,j));
                 a += 2 * z[i]*z[j]*sqrt(ai*aj)*(1.0 - kmat(i,j));
             }
-            b += z[j]**2 * bj
-            a += z[j]**2 * aj
+            a += z[j]**2 * aj;
+            b += z[j]**2 * bj;
         }
         return std::make_tuple(a, b);
     }
@@ -968,10 +968,13 @@ public:
         numtype b = 0.0;
         numtype a = 0.0;
         std::size_t N = delta_1.size();
-        for (auto i = 0; i < N; ++i){
+        for (auto i = 0; i < N-1; ++i){
             auto bi = get_bi(i, T);
             auto ai = get_ai(i, T);
-            for (auto j = 0; j < N; ++j){
+
+            a += z[i]**2 * ai;
+            b += z[i]**2 * bi;
+            for (auto j+1 = 0; j < N; ++j){
                 auto aj = get_ai(j, T);
                 auto bj = get_bi(j, T);
                 
@@ -979,6 +982,8 @@ public:
                 b += z[i]*z[j]*(bi + bj)/2.0*(1.0 - lmat(i,j));
                 
             }
+            a += z[j]**2 * aj;
+            b += z[j]**2 * bj;
         }
         return std::make_tuple(a, b);
     }
