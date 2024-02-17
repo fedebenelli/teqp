@@ -978,8 +978,8 @@ public:
                 auto aj = get_ai(j, T);
                 auto bj = get_bi(j, T);
                 
-                a += z[i]*z[j]*sqrt(ai*aj)*(1.0 - kmat(i,j));
-                b += z[i]*z[j]*(bi + bj)/2.0*(1.0 - lmat(i,j));
+                a += 2.0 * z[i]*z[j]*sqrt(ai*aj)*(1.0 - kmat(i,j));
+                b += z[i]*z[j]*(bi + bj)*(1.0 - lmat(i,j));
                 
             }
             a += z[j]**2 * aj;
