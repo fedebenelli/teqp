@@ -222,7 +222,7 @@ public:
             auto alphai = forceeval(std::visit([&](auto& t) { return t(T); }, alphas[i]));
             auto ai_ = forceeval(this->ai[i] * alphai);
             
-            a_ = a_ + molesfracs[i]**2 * sqrt(ai_**2)
+            a_ = a_ + molesfracs[i]**2 * ai_
 
             for (auto j = i+1; j < molefracs.size(); ++j) {
                 auto alphaj = forceeval(std::visit([&](auto& t) { return t(T); }, alphas[j]));
@@ -230,7 +230,7 @@ public:
                 auto aij = forceeval((1 - kmat(i,j)) * sqrt(ai_ * aj_));
                 a_ = a_ + 2.0 * molefracs[i] * molefracs[j] * aij;
             }
-            a_ = a_ + molesfracs[j]**2 * sqrt(aj_**2)
+            a_ = a_ + molesfracs[j]**2 * aj_
         }
         return forceeval(a_);
     }
@@ -828,15 +828,20 @@ public:
         numtype b = 0.0;
         numtype a = 0.0;
         std::size_t N = alphas.size();
-        for (auto i = 0; i < N; ++i){
+        for (auto i = 0; i < N-1; ++i){
             auto bi = get_bi(i, T);
             auto ai = get_ai(i, T);
-            for (auto j = 0; j < N; ++j){
+
+            b += z[i]**2 * bi
+            a += z[i]**2 * ai
+            for (auto j = i+1; j < N; ++j){
                 auto bj = get_bi(j, T);
                 auto aj = get_ai(j, T);
-                b += z[i]*z[j]*(bi + bj)/2.0*(1.0 - lmat(i,j));
-                a += z[i]*z[j]*sqrt(ai*aj)*(1.0 - kmat(i,j));
+                b += z[i]*z[j]*(bi + bj)*(1.0 - lmat(i,j));
+                a += 2 * z[i]*z[j]*sqrt(ai*aj)*(1.0 - kmat(i,j));
             }
+            b += z[j]**2 * bj
+            a += z[j]**2 * aj
         }
         return std::make_tuple(a, b);
     }
